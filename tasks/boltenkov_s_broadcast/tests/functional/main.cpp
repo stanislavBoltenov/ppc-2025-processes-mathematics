@@ -24,6 +24,9 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
   static std::string PrintTestParam(const TestType &test_param) {
     return test_param;
   }
+  ~BoltenkovSBroadcastRunFuncTestsProcesses() {
+    free(std::get<3>(input_data_));
+  }
 
  protected:
   void SetUp() override {

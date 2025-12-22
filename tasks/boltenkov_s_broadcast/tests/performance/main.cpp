@@ -101,6 +101,11 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
   InType GetTestInputData() final {
     return input_data_;
   }
+
+ public:
+  ~BoltenkovSBroadcastRunPerfTestProcesses() {
+    free(std::get<3>(input_data_));
+  }
 };
 
 TEST_P(BoltenkovSBroadcastRunPerfTestProcesses, RunPerfModes) {
