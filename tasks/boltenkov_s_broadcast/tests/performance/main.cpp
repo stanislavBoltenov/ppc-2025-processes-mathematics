@@ -81,16 +81,21 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
+    bool res = false;
     if (std::get<0>(output_data) == 0) {
       int *data = (int *)std::get<2>(output_data);
-      return equalsDataInputData(data, std::get<1>(output_data));
+      res = equalsDataInputData(data, std::get<1>(output_data));
+      free(data);
     } else if (std::get<0>(output_data) == 1) {
       float *data = (float *)std::get<2>(output_data);
-      return equalsDataInputData(data, std::get<1>(output_data));
-    } else {
+      res = equalsDataInputData(data, std::get<1>(output_data));
+      free(data);
+    } else if (std::get<0>(output_data) == 2) {
       double *data = (double *)std::get<2>(output_data);
-      return equalsDataInputData(data, std::get<1>(output_data));
+      res = equalsDataInputData(data, std::get<1>(output_data));
+      free(data);
     }
+    return res;
   }
 
   InType GetTestInputData() final {
