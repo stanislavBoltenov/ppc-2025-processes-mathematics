@@ -98,7 +98,6 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
       double *data = (double *)std::get<2>(output_data);
       return equalsDataInputData(data, std::get<1>(output_data));
     }
-    return true;
   }
 
   InType GetTestInputData() final {
