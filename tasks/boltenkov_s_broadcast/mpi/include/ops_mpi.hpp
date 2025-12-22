@@ -14,11 +14,13 @@ class BoltenkovSBroadcatskMPI : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
+  ~BoltenkovSBroadcatskMPI();
   explicit BoltenkovSBroadcatskMPI(const InType &in);
 
  private:
   MPI_Datatype mpi_type;
   MPI_Datatype getTypeData(const int &);
+  int getIndTypeData(MPI_Datatype);
   int my_bcast(void *, int, MPI_Datatype, int, MPI_Comm);
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;

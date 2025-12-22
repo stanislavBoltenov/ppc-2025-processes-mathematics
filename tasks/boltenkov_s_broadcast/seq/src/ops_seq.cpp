@@ -15,9 +15,23 @@ BoltenkovSBroadcastkSEQ::BoltenkovSBroadcastkSEQ(const InType &in) {
   if (rank == std::get<0>(in)) {
     GetInput() = in;
   } else {
-    GetInput() = InType{};
+    int cnt_byte = 0;
+    if (std::get<1>(in) == 0) {
+      cnt_byte = std::get<2>(in) * sizeof(int);
+    } else if (std::get<1>(in) == 1) {
+      cnt_byte = std::get<2>(in) * sizeof(float);
+    } else if (std::get<1>(in) == 2) {
+      cnt_byte = std::get<2>(in) * sizeof(double);
+    }
+    void *arr = (void *)malloc(cnt_byte);
+
+    GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), arr);
   }
   GetOutput() = std::make_tuple(-1, -1, nullptr);
+}
+
+BoltenkovSBroadcastkSEQ::~BoltenkovSBroadcastkSEQ() {
+  free(std::get<2>(GetOutput()));
 }
 
 MPI_Datatype BoltenkovSBroadcastkSEQ::getTypeData(const int &ind_data_type) {
@@ -27,6 +41,17 @@ MPI_Datatype BoltenkovSBroadcastkSEQ::getTypeData(const int &ind_data_type) {
     return MPI_FLOAT;
   }
   return MPI_DOUBLE;
+}
+
+int BoltenkovSBroadcastkSEQ::getIndTypeData(MPI_Datatype datatype) {
+  if (datatype == MPI_INT) {
+    return 0;
+  } else if (datatype == MPI_FLOAT) {
+    return 1;
+  } else if (datatype == MPI_DOUBLE) {
+    return 2;
+  }
+  return -1;
 }
 
 bool BoltenkovSBroadcastkSEQ::ValidationImpl() {
@@ -54,6 +79,7 @@ bool BoltenkovSBroadcastkSEQ::PreProcessingImpl() {
 bool BoltenkovSBroadcastkSEQ::RunImpl() {
   int res_mpi =
       MPI_Bcast(std::get<3>(GetInput()), std::get<2>(GetInput()), mpi_type, std::get<0>(GetInput()), MPI_COMM_WORLD);
+  GetOutput() = std::make_tuple(getIndTypeData(mpi_type), std::get<2>(GetInput()), std::get<3>(GetInput()));
   return res_mpi == MPI_SUCCESS;
 }
 

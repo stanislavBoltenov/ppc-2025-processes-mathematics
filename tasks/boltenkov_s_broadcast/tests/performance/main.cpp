@@ -22,7 +22,7 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
 
   void SetUp() override {
     std::string file_name = "test1.bin";
-    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_max_in_matrix, file_name);
+    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_broadcast, file_name);
     std::ifstream file_stream(abs_path, std::ios::in | std::ios::binary);
     if (!file_stream.is_open()) {
       throw std::runtime_error("Error opening file " + file_name + "!");
@@ -55,7 +55,7 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
 
   bool equalsDataInputData(int *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (data[i] != ((int *)std::get<3>(input_data_))[3]) {
+      if (data[i] != ((int *)std::get<3>(input_data_))[i]) {
         return false;
       }
     }
@@ -64,7 +64,7 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
 
   bool equalsDataInputData(float *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((float *)std::get<3>(input_data_))[3]) < 1e-8) {
+      if (std::abs(data[i] - ((float *)std::get<3>(input_data_))[i]) < 1e-8) {
         return false;
       }
     }
@@ -73,7 +73,7 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
 
   bool equalsDataInputData(double *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((double *)std::get<3>(input_data_))[3]) < 1e-14) {
+      if (std::abs(data[i] - ((double *)std::get<3>(input_data_))[i]) < 1e-14) {
         return false;
       }
     }

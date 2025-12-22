@@ -65,7 +65,7 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
 
   bool equalsDataInputData(int *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (data[i] != ((int *)std::get<3>(input_data_))[3]) {
+      if (data[i] != ((int *)std::get<3>(input_data_))[i]) {
         return false;
       }
     }
@@ -74,7 +74,7 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
 
   bool equalsDataInputData(float *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((float *)std::get<3>(input_data_))[3]) < 1e-8) {
+      if (std::abs(data[i] - ((float *)std::get<3>(input_data_))[i]) < 1e-8) {
         return false;
       }
     }
@@ -83,7 +83,7 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
 
   bool equalsDataInputData(double *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((double *)std::get<3>(input_data_))[3]) < 1e-14) {
+      if (std::abs(data[i] - ((double *)std::get<3>(input_data_))[i]) < 1e-14) {
         return false;
       }
     }

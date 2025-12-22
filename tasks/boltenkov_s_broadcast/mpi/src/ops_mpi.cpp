@@ -17,9 +17,23 @@ BoltenkovSBroadcatskMPI::BoltenkovSBroadcatskMPI(const InType &in) {
   if (rank == std::get<0>(in)) {
     GetInput() = in;
   } else {
-    GetInput() = InType{};
+    int cnt_byte = 0;
+    if (std::get<1>(in) == 0) {
+      cnt_byte = std::get<2>(in) * sizeof(int);
+    } else if (std::get<1>(in) == 1) {
+      cnt_byte = std::get<2>(in) * sizeof(float);
+    } else if (std::get<1>(in) == 2) {
+      cnt_byte = std::get<2>(in) * sizeof(double);
+    }
+    void *arr = (void *)malloc(cnt_byte);
+
+    GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), arr);
   }
   GetOutput() = std::make_tuple(-1, -1, nullptr);
+}
+
+BoltenkovSBroadcatskMPI::~BoltenkovSBroadcatskMPI() {
+  free(std::get<2>(GetOutput()));
 }
 
 MPI_Datatype BoltenkovSBroadcatskMPI::getTypeData(const int &ind_data_type) {
@@ -53,11 +67,22 @@ bool BoltenkovSBroadcatskMPI::PreProcessingImpl() {
   return true;
 }
 
+int BoltenkovSBroadcatskMPI::getIndTypeData(MPI_Datatype datatype) {
+  if (datatype == MPI_INT) {
+    return 0;
+  } else if (datatype == MPI_FLOAT) {
+    return 1;
+  } else if (datatype == MPI_DOUBLE) {
+    return 2;
+  }
+  return -1;
+}
+
 int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) {
   int rank = 0;
   int size = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &size);
 
   if (size == 1) {
     return MPI_SUCCESS;
@@ -75,6 +100,7 @@ int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype data
   int right_child = (shift_right_child + root) % size;
 
   if (rank == root) {
+    GetOutput() = std::make_tuple(getIndTypeData(datatype), count, buffer);
     if (left_child < size && left_child != rank) {
       MPI_Send(buffer, count, datatype, left_child, 0, comm);
     }
@@ -85,7 +111,7 @@ int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype data
 
   } else if (shift_parent >= 0 && parent < size) {
     MPI_Recv(buffer, count, datatype, parent, 0, comm, MPI_STATUS_IGNORE);
-
+    GetOutput() = std::make_tuple(getIndTypeData(datatype), count, buffer);
     if (shift_left_child < size && left_child != rank) {
       MPI_Send(buffer, count, datatype, left_child, 0, comm);
     }
@@ -101,6 +127,7 @@ int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype data
 bool BoltenkovSBroadcatskMPI::RunImpl() {
   int res_mpi =
       my_bcast(std::get<3>(GetInput()), std::get<2>(GetInput()), mpi_type, std::get<0>(GetInput()), MPI_COMM_WORLD);
+  GetOutput() = std::make_tuple(getIndTypeData(mpi_type), std::get<2>(GetInput()), std::get<3>(GetInput()));
   return res_mpi == MPI_SUCCESS;
 }
 
