@@ -19,7 +19,7 @@
 
 namespace boltenkov_s_broadcast {
 
-class BoltenkovSRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
     return test_param;
@@ -29,10 +29,10 @@ class BoltenkovSRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InTyp
   void SetUp() override {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     std::string file_name = params + ".bin";
-    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_max_in_matrix, file_name);
+    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_broadcast, file_name);
     std::ifstream file_stream(abs_path, std::ios::in | std::ios::binary);
     if (!file_stream.is_open()) {
-      throw std::runtime_error("Error opening file!\n");
+      throw std::runtime_error("Error opening file " + file_name + "!");
     }
     int root = -1;
     int data_type = -1;
@@ -111,7 +111,7 @@ class BoltenkovSRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InTyp
 
 namespace {
 
-TEST_P(BoltenkovSRunFuncTestsProcesses, MatmulFromPic) {
+TEST_P(BoltenkovSBroadcastRunFuncTestsProcesses, MatmulFromPic) {
   ExecuteTest(GetParam());
 }
 
@@ -123,9 +123,10 @@ const auto kTestTasksList = std::tuple_cat(
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName = BoltenkovSRunFuncTestsProcesses::PrintFuncTestName<BoltenkovSRunFuncTestsProcesses>;
+const auto kPerfTestName =
+    BoltenkovSBroadcastRunFuncTestsProcesses::PrintFuncTestName<BoltenkovSBroadcastRunFuncTestsProcesses>;
 
-INSTANTIATE_TEST_SUITE_P(PicMatrixTests, BoltenkovSRunFuncTestsProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(PicMatrixTests, BoltenkovSBroadcastRunFuncTestsProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace
 

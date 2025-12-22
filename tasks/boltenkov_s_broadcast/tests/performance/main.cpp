@@ -17,7 +17,7 @@
 
 namespace boltenkov_s_broadcast {
 
-class BoltenkovSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
 
   void SetUp() override {
@@ -25,7 +25,7 @@ class BoltenkovSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType
     std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_max_in_matrix, file_name);
     std::ifstream file_stream(abs_path, std::ios::in | std::ios::binary);
     if (!file_stream.is_open()) {
-      throw std::runtime_error("Error opening file!\n");
+      throw std::runtime_error("Error opening file " + file_name + "!");
     }
     int root = -1;
     int data_type = -1;
@@ -99,7 +99,7 @@ class BoltenkovSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType
   }
 };
 
-TEST_P(BoltenkovSRunPerfTestProcesses, RunPerfModes) {
+TEST_P(BoltenkovSBroadcastRunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
@@ -108,8 +108,8 @@ const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, BoltenkovSBroadca
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = BoltenkovSRunPerfTestProcesses::CustomPerfTestName;
+const auto kPerfTestName = BoltenkovSBroadcastRunPerfTestProcesses::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, BoltenkovSRunPerfTestProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, BoltenkovSBroadcastRunPerfTestProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace boltenkov_s_broadcast
