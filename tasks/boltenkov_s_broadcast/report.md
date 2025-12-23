@@ -30,7 +30,7 @@
 
 ## Описание MPI-версии
 Программная реализация использует в качестве типа входных данных специализированный кортеж:  
-`std::tuple<int, int, int, void *>`, 
+`std::tuple<int, int, int, std::vector<char>>`, 
 где:  
 - первый элемент кортежа — номер процесса, который будет пересылать данные,  
 - второй элемент — тип данных:
@@ -38,7 +38,7 @@
     - 1 — MPI_FLOAT
     - 2 — MPI_DOUBLE
 - третий элемент — количество элементов в массиве
-- четвертый элемент - массив данных
+- четвертый элемент - массив данных по байтам
 
 Данная структура данных была выбрана как наиболее удобная для организации эффективного распределения данных между процессами и последующего сбора результатов вычислений.
 
@@ -46,7 +46,7 @@
 Эксперименты проводились на локальной машине.  
 Параметры тестовых данных:
 - размер 10<sup>6</sup> элементов
-- элементы типа `int`, `float`, `double`.
+- с элементами типов `int`, `float`, `double`.
 - использовался генератор псевдослучайных чисел `mt19937`, также известный известный как **«Вихрь Мерсенна»**.
 
 
@@ -71,7 +71,23 @@
 
 ## Параллельная реализация
 ```cpp
-int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) {
+bool BoltenkovSBroadcastkMPI::CheckLeftChild(int left_child, int shift_left_child, MPI_Comm comm) {
+  int rank = 0;
+  int size = 0;
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &size);
+  return (left_child < size || shift_left_child < size) && left_child != rank;
+}
+
+bool BoltenkovSBroadcastkMPI::CheckRightChild(int right_child, int shift_right_child, MPI_Comm comm) {
+  int rank = 0;
+  int size = 0;
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &size);
+  return (right_child < size || shift_right_child < size) && right_child != rank;
+}
+
+int BoltenkovSBroadcastkMPI::MyBcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) {
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(comm, &rank);
@@ -84,33 +100,24 @@ int BoltenkovSBroadcatskMPI::my_bcast(void *buffer, int count, MPI_Datatype data
   // for root = 0
   int shift_rank = (rank - root + size) % size;
   int shift_parent = (shift_rank == 0) ? -1 : (shift_rank - 1) / 2;
-  int shift_left_child = 2 * shift_rank + 1;
-  int shift_right_child = 2 * shift_rank + 2;
+  int shift_left_child = (2 * shift_rank) + 1;
+  int shift_right_child = (2 * shift_rank) + 2;
 
   // for cur root
   int parent = (shift_parent + root) % size;
   int left_child = (shift_left_child + root) % size;
   int right_child = (shift_right_child + root) % size;
 
-  if (rank == root) {
-    if (left_child < size && left_child != rank) {
-      MPI_Send(buffer, count, datatype, left_child, 0, comm);
-    }
-
-    if (right_child < size && right_child != rank) {
-      MPI_Send(buffer, count, datatype, right_child, 0, comm);
-    }
-
-  } else if (shift_parent >= 0 && parent < size) {
+  if (rank != root && shift_parent >= 0 && parent < size) {
     MPI_Recv(buffer, count, datatype, parent, 0, comm, MPI_STATUS_IGNORE);
+  }
 
-    if (shift_left_child < size && left_child != rank) {
-      MPI_Send(buffer, count, datatype, left_child, 0, comm);
-    }
+  if (CheckLeftChild(left_child, shift_left_child, comm)) {
+    MPI_Send(buffer, count, datatype, left_child, 0, comm);
+  }
 
-    if (shift_right_child < size && right_child != rank) {
-      MPI_Send(buffer, count, datatype, right_child, 0, comm);
-    }
+  if (CheckRightChild(right_child, shift_right_child, comm)) {
+    MPI_Send(buffer, count, datatype, right_child, 0, comm);
   }
 
   return MPI_SUCCESS;

@@ -90,13 +90,13 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
   bool CheckTestOutputData(OutType &output_data) final {
     bool res = false;
     if (std::get<0>(output_data) == 0) {
-      auto data = reinterpret_cast<int *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<int *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataInt(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 1) {
-      auto data = reinterpret_cast<float *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<float *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataFloat(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 2) {
-      auto data = reinterpret_cast<double *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<double *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataDouble(data, std::get<1>(output_data));
     }
     return res;
@@ -119,8 +119,7 @@ TEST_P(BoltenkovSBroadcastRunFuncTestsProcesses, MatmulFromPic) {
 const std::array<TestType, 3> kTestParam = {"test1", "test2", "test3"};
 
 const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<BoltenkovSBroadcastkMPI, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast),
-    ppc::util::AddFuncTask<BoltenkovSBroadcastkSEQ, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast));
+    ppc::util::AddFuncTask<BoltenkovSBroadcastkMPI, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

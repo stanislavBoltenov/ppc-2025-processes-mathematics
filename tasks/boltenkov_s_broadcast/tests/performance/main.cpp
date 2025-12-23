@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <fstream>
@@ -83,13 +82,13 @@ class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTes
   bool CheckTestOutputData(OutType &output_data) final {
     bool res = false;
     if (std::get<0>(output_data) == 0) {
-      auto data = reinterpret_cast<int *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<int *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataInt(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 1) {
-      auto data = reinterpret_cast<float *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<float *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataFloat(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 2) {
-      auto data = reinterpret_cast<double *>(std::get<2>(output_data).data());
+      auto *data = reinterpret_cast<double *>(std::get<2>(output_data).data());
       res = EqualsDataInputDataDouble(data, std::get<1>(output_data));
     }
     return res;

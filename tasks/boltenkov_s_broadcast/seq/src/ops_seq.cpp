@@ -1,7 +1,10 @@
 #include "boltenkov_s_broadcast/seq/include/ops_seq.hpp"
 
+#include <mpi.h>
+
 #include <cmath>
-#include <limits>
+#include <cstddef>
+#include <tuple>
 #include <vector>
 
 #include "boltenkov_s_broadcast/common/include/common.hpp"
@@ -60,7 +63,7 @@ bool BoltenkovSBroadcastkSEQ::ValidationImpl() {
     int size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     return std::get<0>(GetInput()) >= 0 && std::get<0>(GetInput()) < size && std::get<2>(GetInput()) >= 0 &&
-           std::get<3>(GetInput()).size() != 0 && std::get<1>(GetInput()) >= 0 && std::get<1>(GetInput()) < 3;
+           !std::get<3>(GetInput()).empty() && std::get<1>(GetInput()) >= 0 && std::get<1>(GetInput()) < 3;
   }
   return true;
 }
@@ -83,7 +86,7 @@ bool BoltenkovSBroadcastkSEQ::RunImpl() {
 }
 
 bool BoltenkovSBroadcastkSEQ::PostProcessingImpl() {
-  return std::get<1>(GetOutput()) >= 0 && std::get<2>(GetOutput()).size() > 0 && std::get<0>(GetOutput()) >= 0 &&
+  return std::get<1>(GetOutput()) >= 0 && !std::get<2>(GetOutput()).empty() && std::get<0>(GetOutput()) >= 0 &&
          std::get<0>(GetOutput()) <= 2;
 }
 

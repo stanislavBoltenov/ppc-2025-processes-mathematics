@@ -3,6 +3,7 @@
 #include <mpi.h>
 
 #include <cmath>
+#include <cstddef>
 #include <tuple>
 #include <vector>
 
@@ -19,11 +20,11 @@ BoltenkovSBroadcastkMPI::BoltenkovSBroadcastkMPI(const InType &in) {
   } else {
     int cnt_byte = 0;
     if (std::get<1>(in) == static_cast<size_t>(0)) {
-      cnt_byte = std::get<2>(in) * sizeof(int);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(int));
     } else if (std::get<1>(in) == static_cast<size_t>(1)) {
-      cnt_byte = std::get<2>(in) * sizeof(float);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(float));
     } else if (std::get<1>(in) == static_cast<size_t>(2)) {
-      cnt_byte = std::get<2>(in) * sizeof(double);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(double));
     }
 
     GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), std::vector<char>(cnt_byte));
@@ -49,7 +50,7 @@ bool BoltenkovSBroadcastkMPI::ValidationImpl() {
     int size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     return std::get<0>(GetInput()) >= 0 && std::get<0>(GetInput()) < size && std::get<2>(GetInput()) >= 0 &&
-           std::get<3>(GetInput()).size() != 0 && std::get<1>(GetInput()) >= 0 && std::get<1>(GetInput()) < 3;
+           !std::get<3>(GetInput()).empty() && std::get<1>(GetInput()) >= 0 && std::get<1>(GetInput()) < 3;
   }
   return true;
 }
@@ -137,7 +138,7 @@ bool BoltenkovSBroadcastkMPI::RunImpl() {
 }
 
 bool BoltenkovSBroadcastkMPI::PostProcessingImpl() {
-  return std::get<1>(GetOutput()) >= 0 && std::get<2>(GetOutput()).size() > 0 && std::get<0>(GetOutput()) >= 0 &&
+  return std::get<1>(GetOutput()) >= 0 && !std::get<2>(GetOutput()).empty() && std::get<0>(GetOutput()) >= 0 &&
          std::get<0>(GetOutput()) <= 2;
 }
 

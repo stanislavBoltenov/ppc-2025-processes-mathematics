@@ -16,11 +16,11 @@ class BoltenkovSBroadcastkMPI : public BaseTask {
 
  private:
   MPI_Datatype mpi_type_;
-  MPI_Datatype GetTypeData(const int &);
-  static int GetIndTypeData(MPI_Datatype);
-  static bool CheckLeftChild(int, int, MPI_Comm);
-  static bool CheckRightChild(int, int, MPI_Comm);
-  int MyBcast(void *, int, MPI_Datatype, int, MPI_Comm);
+  static MPI_Datatype GetTypeData(const int &ind_data_type);
+  static int GetIndTypeData(MPI_Datatype datatype);
+  static bool CheckLeftChild(int left_child, int shift_left_child, MPI_Comm comm);
+  static bool CheckRightChild(int right_child, int shift_right_child, MPI_Comm comm);
+  static int MyBcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;

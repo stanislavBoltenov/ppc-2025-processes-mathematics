@@ -16,8 +16,8 @@ class BoltenkovSBroadcastkSEQ : public BaseTask {
 
  private:
   MPI_Datatype mpi_type_;
-  MPI_Datatype GetTypeData(const int &);
-  static int GetIndTypeData(MPI_Datatype);
+  MPI_Datatype GetTypeData(const int &ind_data_type);
+  static int GetIndTypeData(MPI_Datatype datatype);
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;
