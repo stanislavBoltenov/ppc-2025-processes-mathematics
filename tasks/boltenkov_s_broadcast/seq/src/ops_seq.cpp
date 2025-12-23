@@ -63,7 +63,6 @@ bool BoltenkovSBroadcastkSEQ::ValidationImpl() {
            std::get<3>(GetInput()).size() != 0 && std::get<1>(GetInput()) >= 0 && std::get<1>(GetInput()) < 3;
   }
   return true;
-  return true;
 }
 
 bool BoltenkovSBroadcastkSEQ::PreProcessingImpl() {
