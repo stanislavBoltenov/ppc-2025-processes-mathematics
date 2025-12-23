@@ -71,7 +71,7 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
 
   bool EqualsDataInputDataFloat(const float *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - (reinterpret_cast<float *>(std::get<3>(input_data_).data()))[i]) < 1e-8) {
+      if (std::abs(data[i] - (reinterpret_cast<float *>(std::get<3>(input_data_).data()))[i]) > 1e-8) {
         return false;
       }
     }
@@ -80,7 +80,7 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
 
   bool EqualsDataInputDataDouble(const double *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - (reinterpret_cast<double *>(std::get<3>(input_data_).data()))[i]) < 1e-14) {
+      if (std::abs(data[i] - (reinterpret_cast<double *>(std::get<3>(input_data_).data()))[i]) > 1e-14) {
         return false;
       }
     }
