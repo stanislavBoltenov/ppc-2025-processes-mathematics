@@ -20,11 +20,11 @@ BoltenkovSBroadcastkSEQ::BoltenkovSBroadcastkSEQ(const InType &in) {
   } else {
     int cnt_byte = 0;
     if (std::get<1>(in) == static_cast<size_t>(0)) {
-      cnt_byte = std::get<2>(in) * sizeof(int);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(int));
     } else if (std::get<1>(in) == static_cast<size_t>(1)) {
-      cnt_byte = std::get<2>(in) * sizeof(float);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(float));
     } else if (std::get<1>(in) == static_cast<size_t>(2)) {
-      cnt_byte = std::get<2>(in) * sizeof(double);
+      cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(double));
     }
 
     GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), std::vector<char>(cnt_byte));

@@ -13,7 +13,6 @@
 
 #include "boltenkov_s_broadcast/common/include/common.hpp"
 #include "boltenkov_s_broadcast/mpi/include/ops_mpi.hpp"
-#include "boltenkov_s_broadcast/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 
