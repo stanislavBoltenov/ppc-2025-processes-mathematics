@@ -8,8 +8,8 @@
 
 namespace boltenkov_s_broadcast {
 
-using InType = std::tuple<int, int, int, void *>;  // root, data type, cnt item, data
-using OutType = std::tuple<int, int, void *>;      // data type, cnt item, data
+using InType = std::tuple<int, int, int, std::vector<char>>;  // root, data type, cnt item, data
+using OutType = std::tuple<int, int, std::vector<char>>;      // data type, cnt item, data
 using TestType = std::string;
 using BaseTask = ppc::task::Task<InType, OutType>;
 

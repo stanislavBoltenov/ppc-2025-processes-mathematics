@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <stb/stb_image.h>
 
-#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <fstream>
 #include <ios>
@@ -23,9 +23,6 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
  public:
   static std::string PrintTestParam(const TestType &test_param) {
     return test_param;
-  }
-  ~BoltenkovSBroadcastRunFuncTestsProcesses() {
-    free(std::get<3>(input_data_));
   }
 
  protected:
@@ -51,39 +48,39 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
     std::get<2>(input_data_) = cnt;
     int cnt_byte = 0;
     if (data_type == 0) {
-      cnt_byte = cnt * sizeof(int);
+      cnt_byte = cnt * static_cast<int>(sizeof(int));
     } else if (data_type == 1) {
-      cnt_byte = cnt * sizeof(float);
+      cnt_byte = cnt * static_cast<int>(sizeof(float));
     } else if (data_type == 2) {
-      cnt_byte = cnt * sizeof(double);
+      cnt_byte = cnt * static_cast<int>(sizeof(double));
     }
-    char *arr = (char *)malloc(cnt_byte);
-    file_stream.read(arr, static_cast<std::streamsize>(sizeof(int) * cnt));
-    std::get<3>(input_data_) = (void *)arr;
+    std::vector<char> &v = std::get<3>(input_data_);
+    v.resize(static_cast<std::size_t>(cnt_byte));
+    file_stream.read(reinterpret_cast<char *>(v.data()), static_cast<std::streamsize>(sizeof(char) * cnt_byte));
     file_stream.close();
   }
 
-  bool equalsDataInputData(int *data, int cnt) {
+  bool EqualsDataInputDataInt(const int *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (data[i] != ((int *)std::get<3>(input_data_))[i]) {
+      if (data[i] != (reinterpret_cast<int *>(std::get<3>(input_data_).data())[i])) {
         return false;
       }
     }
     return true;
   }
 
-  bool equalsDataInputData(float *data, int cnt) {
+  bool EqualsDataInputDataFloat(const float *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((float *)std::get<3>(input_data_))[i]) < 1e-8) {
+      if (std::abs(data[i] - (reinterpret_cast<float *>(std::get<3>(input_data_).data()))[i]) < 1e-8) {
         return false;
       }
     }
     return true;
   }
 
-  bool equalsDataInputData(double *data, int cnt) {
+  bool EqualsDataInputDataDouble(const double *data, int cnt) {
     for (int i = 0; i < cnt; i++) {
-      if (std::abs(data[i] - ((double *)std::get<3>(input_data_))[i]) < 1e-14) {
+      if (std::abs(data[i] - (reinterpret_cast<double *>(std::get<3>(input_data_).data()))[i]) < 1e-14) {
         return false;
       }
     }
@@ -93,17 +90,14 @@ class BoltenkovSBroadcastRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
   bool CheckTestOutputData(OutType &output_data) final {
     bool res = false;
     if (std::get<0>(output_data) == 0) {
-      int *data = (int *)std::get<2>(output_data);
-      res = equalsDataInputData(data, std::get<1>(output_data));
-      free(data);
+      auto data = reinterpret_cast<int *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataInt(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 1) {
-      float *data = (float *)std::get<2>(output_data);
-      res = equalsDataInputData(data, std::get<1>(output_data));
-      free(data);
+      auto data = reinterpret_cast<float *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataFloat(data, std::get<1>(output_data));
     } else if (std::get<0>(output_data) == 2) {
-      double *data = (double *)std::get<2>(output_data);
-      res = equalsDataInputData(data, std::get<1>(output_data));
-      free(data);
+      auto data = reinterpret_cast<double *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataDouble(data, std::get<1>(output_data));
     }
     return res;
   }
@@ -125,7 +119,7 @@ TEST_P(BoltenkovSBroadcastRunFuncTestsProcesses, MatmulFromPic) {
 const std::array<TestType, 3> kTestParam = {"test1", "test2", "test3"};
 
 const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<BoltenkovSBroadcatskMPI, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast),
+    ppc::util::AddFuncTask<BoltenkovSBroadcastkMPI, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast),
     ppc::util::AddFuncTask<BoltenkovSBroadcastkSEQ, InType>(kTestParam, PPC_SETTINGS_boltenkov_s_broadcast));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);

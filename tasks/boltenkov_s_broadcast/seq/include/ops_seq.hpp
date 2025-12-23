@@ -12,13 +12,12 @@ class BoltenkovSBroadcastkSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  ~BoltenkovSBroadcastkSEQ();
   explicit BoltenkovSBroadcastkSEQ(const InType &in);
 
  private:
-  MPI_Datatype mpi_type;
-  MPI_Datatype getTypeData(const int &);
-  int getIndTypeData(MPI_Datatype);
+  MPI_Datatype mpi_type_;
+  MPI_Datatype GetTypeData(const int &);
+  static int GetIndTypeData(MPI_Datatype);
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;
