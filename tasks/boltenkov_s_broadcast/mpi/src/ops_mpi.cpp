@@ -27,9 +27,14 @@ BoltenkovSBroadcastkMPI::BoltenkovSBroadcastkMPI(const InType &in) {
       cnt_byte = std::get<2>(in) * static_cast<int>(sizeof(double));
     }
 
-    GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), std::vector<char>(cnt_byte));
+    std::vector<char> vec;
+    if (cnt_byte > 0) {
+      vec.resize(cnt_byte);
+    }
+
+    GetInput() = std::make_tuple(std::get<0>(in), std::get<1>(in), std::get<2>(in), std::move(vec));
   }
-  GetOutput() = std::make_tuple(-1, -1, std::vector<char>(0));
+  GetOutput() = std::make_tuple(-1, -1, std::vector<char>());
   mpi_type_ = MPI_DOUBLE;
 }
 
