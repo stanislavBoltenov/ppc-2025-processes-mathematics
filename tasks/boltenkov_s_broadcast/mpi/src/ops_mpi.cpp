@@ -83,7 +83,7 @@ bool BoltenkovSBroadcastkMPI::CheckLeftChild(int left_child, int shift_left_chil
   int size = 0;
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
-  return (left_child < size || shift_left_child < size) && left_child != rank;
+  return shift_left_child < size && left_child != rank;
 }
 
 bool BoltenkovSBroadcastkMPI::CheckRightChild(int right_child, int shift_right_child, MPI_Comm comm) {
@@ -91,7 +91,7 @@ bool BoltenkovSBroadcastkMPI::CheckRightChild(int right_child, int shift_right_c
   int size = 0;
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
-  return (right_child < size || shift_right_child < size) && right_child != rank;
+  return shift_right_child < size && right_child != rank;
 }
 
 int BoltenkovSBroadcastkMPI::MyBcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) {
@@ -115,7 +115,7 @@ int BoltenkovSBroadcastkMPI::MyBcast(void *buffer, int count, MPI_Datatype datat
   int left_child = (shift_left_child + root) % size;
   int right_child = (shift_right_child + root) % size;
 
-  if (rank != root && shift_parent >= 0 && parent < size) {
+  if (rank != root) {
     MPI_Recv(buffer, count, datatype, parent, 0, comm, MPI_STATUS_IGNORE);
   }
 
