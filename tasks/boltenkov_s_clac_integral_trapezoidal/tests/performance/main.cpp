@@ -45,9 +45,9 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
 
  public:
   BoltenkovSCalcIntegralRunPerfTestProcesses() {
-    InType input_data_ = InType{};
-    OutType expected_output_ = OutType{};
-    double eps_ = 0.0;
+    input_data_ = InType{};
+    expected_output_ = OutType{};
+    eps_ = 0.0;
   }
 };
 
