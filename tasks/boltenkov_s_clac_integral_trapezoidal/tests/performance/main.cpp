@@ -1,19 +1,15 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <fstream>
-#include <ios>
-#include <stdexcept>
-#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "boltenkov_s_clac_integral_trapezoidal/common/include/common.hpp"
 #include "boltenkov_s_clac_integral_trapezoidal/mpi/include/ops_mpi.hpp"
 #include "boltenkov_s_clac_integral_trapezoidal/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
-#include "util/include/util.hpp"
 
 namespace boltenkov_s_clac_integral_trapezoidal {
 
@@ -22,7 +18,7 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
   OutType expected_output_;
   double eps_;
 
-  static double f3(std::vector<double> args) {
+  static double F3(std::vector<double> args) {
     double res = 0.0;
     for (std::size_t i = 0; i < args.size(); i++) {
       res += args[i] * args[i];
@@ -32,7 +28,7 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
 
   void SetUp() override {
     TestType test_params = std::make_tuple(
-        std::make_tuple(1 << 8, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), f3), 1.,
+        std::make_tuple(1 << 8, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F3), 1.,
         1e-5, 0);
     input_data_ = std::get<0>(test_params);
     expected_output_ = std::get<1>(test_params);
@@ -45,6 +41,13 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
 
   InType GetTestInputData() final {
     return input_data_;
+  }
+
+ public:
+  BoltenkovSCalcIntegralRunPerfTestProcesses::BoltenkovSCalcIntegralRunPerfTestProcesses() {
+    InType input_data_ = InType{};
+    OutType expected_output_ = OutType{};
+    double eps_ = 0.0;
   }
 };
 

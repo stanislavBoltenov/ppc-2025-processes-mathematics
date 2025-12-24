@@ -3,8 +3,10 @@
 #include <mpi.h>
 
 #include <cmath>
-#include <limits>
+#include <cstddef>
+#include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "boltenkov_s_clac_integral_trapezoidal/common/include/common.hpp"
@@ -31,7 +33,7 @@ bool BoltenkovSCalcIntegralkMPI::ValidationImpl() {
   if (rank != 0) {
     return true;
   }
-  return std::get<0>(GetInput()) > 1 && std::get<1>(GetInput()) == static_cast<int>(std::get<2>(GetInput()).size());
+  return std::get<0>(GetInput()) > 1 && std::cmp_equal(std::get<1>(GetInput()), std::get<2>(GetInput()).size());
 }
 
 bool BoltenkovSCalcIntegralkMPI::PreProcessingImpl() {
@@ -77,7 +79,7 @@ void BoltenkovSCalcIntegralkMPI::CalcPoints(const int &n, const int &ind_cur_arg
   std::swap(args, args_tmp);
 }
 
-double BoltenkovSCalcIntegralkMPI::calcIntegral(const int &n, const int &cnt_limits,
+double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &n, const int &cnt_limits,
                                                 const std::vector<std::pair<double, double>> &limits,
                                                 double (*func)(std::vector<double>)) {
   double per = 1.0;
@@ -122,7 +124,8 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
 
   MPI_Bcast(&sign_integral_, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  int n, cnt_limits;
+  int n = 0;
+  int cnt_limits = 0;
   std::vector<std::pair<double, double>> limits;
 
   if (rank == 0) {
@@ -139,7 +142,8 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
   }
 
   for (int i = 0; i < cnt_limits; i++) {
-    double first, second;
+    double first = 0.0;
+    double second = 0.0;
     if (rank == 0) {
       first = limits[i].first;
       second = limits[i].second;
@@ -151,18 +155,19 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
     }
   }
 
-  double local_a, local_b;
+  double local_a = 0.0;
+  double local_b = 0.0;
   double global_a = limits[0].first;
   double global_b = limits[0].second;
   double interval_length = (global_b - global_a) / size;
 
-  local_a = global_a + rank * interval_length;
-  local_b = global_a + (rank + 1) * interval_length;
+  local_a = global_a + (rank * interval_length);
+  local_b = global_a + ((rank + 1) * interval_length);
 
   std::vector<std::pair<double, double>> local_limits = limits;
   local_limits[0] = {local_a, local_b};
 
-  double local_integral = calcIntegral(n, cnt_limits, local_limits, std::get<3>(GetInput()));
+  double local_integral = CalcIntegral(n, cnt_limits, local_limits, std::get<3>(GetInput()));
 
   double &global_integral = GetOutput();
   MPI_Reduce(&local_integral, &global_integral, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

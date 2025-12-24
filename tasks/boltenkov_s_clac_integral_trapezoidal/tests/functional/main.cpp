@@ -1,14 +1,12 @@
 #include <gtest/gtest.h>
 #include <stb/stb_image.h>
 
-#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
-#include <fstream>
-#include <ios>
-#include <stdexcept>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "boltenkov_s_clac_integral_trapezoidal/common/include/common.hpp"
@@ -21,6 +19,12 @@ namespace boltenkov_s_clac_integral_trapezoidal {
 
 class BoltenkovSCalcIntegralRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
+  BoltenkovSCalcIntegralRunFuncTestsProcesses::BoltenkovSCalcIntegralRunFuncTestsProcesses() {
+    InType input_data_ = InType{};
+    OutType expected_output_ = OutType{};
+    double eps_ = 0.0;
+  }
+
   static std::string PrintTestParam(const TestType &test_param) {
     int grid_dim =
         static_cast<int>(std::pow(std::get<0>(std::get<0>(test_param)), std::get<1>(std::get<0>(test_param))));
@@ -59,7 +63,7 @@ TEST_P(BoltenkovSCalcIntegralRunFuncTestsProcesses, MatmulFromPic) {
   ExecuteTest(GetParam());
 }
 
-double f1(std::vector<double> args) {
+double F1(std::vector<double> args) {
   double res = 1.0;
   for (std::size_t i = 0; i < args.size(); i++) {
     res += 0.0 * args[i];
@@ -67,7 +71,7 @@ double f1(std::vector<double> args) {
   return res;
 }
 
-double f2(std::vector<double> args) {
+double F2(std::vector<double> args) {
   double res = 0.0;
   for (std::size_t i = 0; i < args.size(); i++) {
     res += args[i];
@@ -75,7 +79,7 @@ double f2(std::vector<double> args) {
   return res;
 }
 
-double f3(std::vector<double> args) {
+double F3(std::vector<double> args) {
   double res = 0.0;
   for (std::size_t i = 0; i < args.size(); i++) {
     res += args[i] * args[i];
@@ -84,23 +88,23 @@ double f3(std::vector<double> args) {
 }
 
 const std::array<TestType, 8> kTestParam = {
-    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), f1), 1., 1e-14, 0),
-    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), f1), 1.,
+    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F1), 1., 1e-14, 0),
+    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F1), 1.,
                     1e-14, 1),
     std::make_tuple(
-        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), f1), 1.,
+        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F1), 1.,
         1e-14, 2),
-    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), f2), 0.5, 1e-14, 3),
-    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), f2), 1.,
+    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F2), 0.5, 1e-14, 3),
+    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F2), 1.,
                     1e-14, 4),
     std::make_tuple(
-        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), f2), 1.5,
+        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F2), 1.5,
         1e-14, 5),
     std::make_tuple(
         std::make_tuple(1 << 3, 4, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}, {0., 1.}}),
-                        f2),
+                        F2),
         2., 1e-14, 6),
-    std::make_tuple(std::make_tuple(1 << 9, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), f3),
+    std::make_tuple(std::make_tuple(1 << 9, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F3),
                     2. / 3., 1e-5, 7),
 };
 

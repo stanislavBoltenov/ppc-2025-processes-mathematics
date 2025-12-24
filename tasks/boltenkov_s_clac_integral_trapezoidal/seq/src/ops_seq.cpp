@@ -1,8 +1,9 @@
 #include "boltenkov_s_clac_integral_trapezoidal/seq/include/ops_seq.hpp"
 
 #include <cmath>
-#include <limits>
+#include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "boltenkov_s_clac_integral_trapezoidal/common/include/common.hpp"
@@ -17,7 +18,7 @@ BoltenkovSCalcIntegralkSEQ::BoltenkovSCalcIntegralkSEQ(const InType &in) {
 }
 
 bool BoltenkovSCalcIntegralkSEQ::ValidationImpl() {
-  return std::get<0>(GetInput()) > 1 && std::get<1>(GetInput()) == static_cast<int>(std::get<2>(GetInput()).size());
+  return std::get<0>(GetInput()) > 1 && std::cmp_equal(std::get<1>(GetInput()), std::get<2>(GetInput()).size());
 }
 
 bool BoltenkovSCalcIntegralkSEQ::PreProcessingImpl() {
@@ -58,7 +59,7 @@ void BoltenkovSCalcIntegralkSEQ::CalcPoints(const int &n, const int &ind_cur_arg
   std::swap(args, args_tmp);
 }
 
-double BoltenkovSCalcIntegralkSEQ::calcIntegral(const int &n, const int &cnt_limits,
+double BoltenkovSCalcIntegralkSEQ::CalcIntegral(const int &n, const int &cnt_limits,
                                                 const std::vector<std::pair<double, double>> &limits,
                                                 double (*func)(std::vector<double>)) {
   double per = 1.0;
@@ -97,7 +98,7 @@ double BoltenkovSCalcIntegralkSEQ::calcIntegral(const int &n, const int &cnt_lim
 
 bool BoltenkovSCalcIntegralkSEQ::RunImpl() {
   GetOutput() =
-      calcIntegral(std::get<0>(GetInput()), std::get<1>(GetInput()), std::get<2>(GetInput()), std::get<3>(GetInput()));
+      CalcIntegral(std::get<0>(GetInput()), std::get<1>(GetInput()), std::get<2>(GetInput()), std::get<3>(GetInput()));
   return true;
 }
 
