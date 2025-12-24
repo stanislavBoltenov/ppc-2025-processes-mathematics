@@ -61,4 +61,4 @@ const auto kPerfTestName = BoltenkovSCalcIntegralRunPerfTestProcesses::CustomPer
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, BoltenkovSCalcIntegralRunPerfTestProcesses, kGtestValues, kPerfTestName);
 
-}  // namespace boltenkov_s_clac_integral_trapezoida
+}  // namespace boltenkov_s_clac_integral_trapezoidal

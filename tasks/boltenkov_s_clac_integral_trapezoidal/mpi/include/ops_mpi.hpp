@@ -27,4 +27,4 @@ class BoltenkovSCalcIntegralkMPI : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace boltenkov_s_clac_integral_trapezoida
+}  // namespace boltenkov_s_clac_integral_trapezoidal
