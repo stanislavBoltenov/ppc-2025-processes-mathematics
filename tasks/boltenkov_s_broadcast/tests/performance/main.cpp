@@ -1,0 +1,115 @@
+#include <gtest/gtest.h>
+
+#include <cmath>
+#include <cstddef>
+#include <fstream>
+#include <ios>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include "boltenkov_s_broadcast/common/include/common.hpp"
+#include "boltenkov_s_broadcast/mpi/include/ops_mpi.hpp"
+#include "boltenkov_s_broadcast/seq/include/ops_seq.hpp"
+#include "util/include/perf_test_util.hpp"
+#include "util/include/util.hpp"
+
+namespace boltenkov_s_broadcast {
+
+class BoltenkovSBroadcastRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+  InType input_data_;
+
+  void SetUp() override {
+    std::string file_name = "test1.bin";
+    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_boltenkov_s_broadcast, file_name);
+    std::ifstream file_stream(abs_path, std::ios::in | std::ios::binary);
+    if (!file_stream.is_open()) {
+      throw std::runtime_error("Error opening file " + file_name + "!");
+    }
+    int root = -1;
+    int data_type = -1;
+    int cnt = -1;
+    file_stream.read(reinterpret_cast<char *>(&root), sizeof(int));
+    file_stream.read(reinterpret_cast<char *>(&data_type), sizeof(int));
+    file_stream.read(reinterpret_cast<char *>(&cnt), sizeof(int));
+    if (cnt < 0 || data_type < 0 || data_type > 2) {
+      throw std::runtime_error("invalid input data!\n");
+    }
+    std::get<0>(input_data_) = root;
+    std::get<1>(input_data_) = data_type;
+    std::get<2>(input_data_) = cnt;
+    int cnt_byte = 0;
+    if (data_type == 0) {
+      cnt_byte = cnt * static_cast<int>(sizeof(int));
+    } else if (data_type == 1) {
+      cnt_byte = cnt * static_cast<int>(sizeof(float));
+    } else if (data_type == 2) {
+      cnt_byte = cnt * static_cast<int>(sizeof(double));
+    }
+    std::vector<char> &v = std::get<3>(input_data_);
+    v.resize(static_cast<std::size_t>(cnt_byte));
+    file_stream.read(reinterpret_cast<char *>(v.data()), static_cast<std::streamsize>(sizeof(char) * cnt_byte));
+    file_stream.close();
+  }
+
+  bool EqualsDataInputDataInt(const int *data, int cnt) {
+    for (int i = 0; i < cnt; i++) {
+      if (data[i] != (reinterpret_cast<int *>(std::get<3>(input_data_).data())[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool EqualsDataInputDataFloat(const float *data, int cnt) {
+    for (int i = 0; i < cnt; i++) {
+      if (std::abs(data[i] - (reinterpret_cast<float *>(std::get<3>(input_data_).data()))[i]) > 1e-8) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool EqualsDataInputDataDouble(const double *data, int cnt) {
+    for (int i = 0; i < cnt; i++) {
+      if (std::abs(data[i] - (reinterpret_cast<double *>(std::get<3>(input_data_).data()))[i]) > 1e-14) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool CheckTestOutputData(OutType &output_data) final {
+    bool res = false;
+    if (std::get<0>(output_data) == 0) {
+      auto *data = reinterpret_cast<int *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataInt(data, std::get<1>(output_data));
+    } else if (std::get<0>(output_data) == 1) {
+      auto *data = reinterpret_cast<float *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataFloat(data, std::get<1>(output_data));
+    } else if (std::get<0>(output_data) == 2) {
+      auto *data = reinterpret_cast<double *>(std::get<2>(output_data).data());
+      res = EqualsDataInputDataDouble(data, std::get<1>(output_data));
+    }
+    return res;
+  }
+
+  InType GetTestInputData() final {
+    return input_data_;
+  }
+};
+
+TEST_P(BoltenkovSBroadcastRunPerfTestProcesses, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
+
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, BoltenkovSBroadcastkMPI, BoltenkovSBroadcastkSEQ>(
+    PPC_SETTINGS_boltenkov_s_broadcast);
+
+const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
+
+const auto kPerfTestName = BoltenkovSBroadcastRunPerfTestProcesses::CustomPerfTestName;
+
+INSTANTIATE_TEST_SUITE_P(RunModeTests, BoltenkovSBroadcastRunPerfTestProcesses, kGtestValues, kPerfTestName);
+
+}  // namespace boltenkov_s_broadcast
