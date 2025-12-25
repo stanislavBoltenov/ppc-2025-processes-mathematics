@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstddef>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "boltenkov_s_broadcast/common/include/common.hpp"
@@ -80,6 +81,9 @@ bool BoltenkovSBroadcastkSEQ::PreProcessingImpl() {
     int ind_data_type = std::get<1>(GetInput());
     mpi_type_ = GetTypeData(ind_data_type);
   }
+  int type_int = GetIndTypeData(mpi_type_);
+  MPI_Bcast(&type_int, 1, MPI_INT, std::get<0>(GetInput()), MPI_COMM_WORLD);
+  mpi_type_ = GetTypeData(type_int);
   return true;
 }
 
