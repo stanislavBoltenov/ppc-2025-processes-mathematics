@@ -19,7 +19,7 @@ namespace boltenkov_s_clac_integral_trapezoidal {
 
 class BoltenkovSCalcIntegralRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  BoltenkovSCalcIntegralRunFuncTestsProcesses() : expected_output_(OutType{}), eps_(0.0) {
+  BoltenkovSCalcIntegralRunFuncTestsProcesses() : expected_output_(OutType{}) {
     input_data_ = InType{};
   }
 
@@ -52,7 +52,7 @@ class BoltenkovSCalcIntegralRunFuncTestsProcesses : public ppc::util::BaseRunFun
  private:
   InType input_data_;
   OutType expected_output_;
-  double eps_;
+  double eps_{0.0};
 };
 
 namespace {

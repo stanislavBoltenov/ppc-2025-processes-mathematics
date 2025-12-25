@@ -18,7 +18,7 @@ class BoltenkovSCalcIntegralkSEQ : public BaseTask {
   explicit BoltenkovSCalcIntegralkSEQ(const InType &in);
 
  private:
-  int sign_integral_;
+  int sign_integral_{1};
   static double CalcCoef(const std::vector<double> &args, const std::vector<std::pair<double, double>> &limits);
   static void CalcPoints(const int &n, const int &ind_cur_args, const std::vector<double> &h,
                          std::unique_ptr<std::queue<std::vector<double>>> &args);

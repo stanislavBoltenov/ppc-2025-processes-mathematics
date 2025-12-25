@@ -79,12 +79,13 @@ void BoltenkovSCalcIntegralkMPI::CalcPoints(const int &n, const int &ind_cur_arg
   std::swap(args, args_tmp);
 }
 
-double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &cnt_limits,
+double BoltenkovSCalcIntegralkMPI::CalcIntegral(const std::vector<int> &n, const int &cnt_limits,
                                                 const std::vector<std::pair<double, double>> &limits,
-                                                const std::vector<double> &h, double (*func)(std::vector<double>)) {
+                                                const std::vector<double> &h,
+                                                double (*func)(std::vector<double>)) const {
   double per = 1.0;
-  for (std::size_t i = 0; i < h.size(); i++) {
-    per *= h[i];
+  for (double hi : h) {
+    per *= hi;
   }
 
   std::vector<double> args_init(cnt_limits);
@@ -99,7 +100,7 @@ double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &cnt_limits,
   int ind_cur_args = 0;
 
   while (ind_cur_args != cnt_limits) {
-    CalcPoints((limits[ind_cur_args].second - limits[ind_cur_args].first) / h[ind_cur_args], ind_cur_args, h, args);
+    CalcPoints(n[ind_cur_args], ind_cur_args, h, args);
     ind_cur_args++;
   }
 
@@ -128,6 +129,7 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
 
   if (rank == 0) {
     n = std::get<0>(GetInput());
+    n += size - (n % size);
     cnt_limits = std::get<1>(GetInput());
     limits = std::get<2>(GetInput());
   }
@@ -166,12 +168,17 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
   local_limits[0] = {local_a, local_b};
 
   std::vector<double> h(cnt_limits);
-  h[0] = (local_b - local_a) * (static_cast<double>(size) / (static_cast<double>(n)));
+  if (!h.empty()) {
+    h[0] = (local_b - local_a) * (static_cast<double>(size) / (static_cast<double>(n)));
+  }
   for (std::size_t i = 1; i < h.size(); i++) {
     h[i] = (limits[i].second - limits[i].first) / static_cast<double>(n);
   }
-
-  double local_integral = CalcIntegral(cnt_limits, local_limits, h, std::get<3>(GetInput()));
+  std::vector<int> n_vec(cnt_limits, n);
+  if (!h.empty()) {
+    n_vec[0] = static_cast<double>(n) / size;
+  }
+  double local_integral = CalcIntegral(n_vec, cnt_limits, local_limits, h, std::get<3>(GetInput()));
 
   double global_integral = 0.0;
   MPI_Reduce(&local_integral, &global_integral, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

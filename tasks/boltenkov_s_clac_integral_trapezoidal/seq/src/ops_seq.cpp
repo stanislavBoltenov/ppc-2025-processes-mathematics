@@ -11,7 +11,7 @@
 
 namespace boltenkov_s_clac_integral_trapezoidal {
 
-BoltenkovSCalcIntegralkSEQ::BoltenkovSCalcIntegralkSEQ(const InType &in) : sign_integral_(1) {
+BoltenkovSCalcIntegralkSEQ::BoltenkovSCalcIntegralkSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0.0;

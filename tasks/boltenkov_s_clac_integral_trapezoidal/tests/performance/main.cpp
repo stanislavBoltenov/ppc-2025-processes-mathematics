@@ -16,7 +16,7 @@ namespace boltenkov_s_clac_integral_trapezoidal {
 class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
   OutType expected_output_;
-  double eps_;
+  double eps_{0.0};
 
   static double F3(std::vector<double> args) {
     double res = 0.0;
@@ -44,7 +44,7 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
   }
 
  public:
-  BoltenkovSCalcIntegralRunPerfTestProcesses() : expected_output_(OutType{}), eps_(0.0) {
+  BoltenkovSCalcIntegralRunPerfTestProcesses() : expected_output_(OutType{}) {
     input_data_ = InType{};
   }
 };
