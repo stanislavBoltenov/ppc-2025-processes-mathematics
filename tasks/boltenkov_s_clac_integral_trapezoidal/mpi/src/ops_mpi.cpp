@@ -176,7 +176,7 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
   }
   std::vector<int> n_vec(cnt_limits, n);
   if (!h.empty()) {
-    n_vec[0] = static_cast<double>(n) / size;
+    n_vec[0] = n / size;
   }
   double local_integral = CalcIntegral(n_vec, cnt_limits, local_limits, h, std::get<3>(GetInput()));
 

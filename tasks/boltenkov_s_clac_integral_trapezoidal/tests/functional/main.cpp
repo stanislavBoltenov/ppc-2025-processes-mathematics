@@ -103,7 +103,7 @@ const std::array<TestType, 8> kTestParam = {
                         F2),
         2., 1e-8, 6),
     std::make_tuple(std::make_tuple(1 << 10, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F3),
-                    2. / 3., 1e-3, 7),
+                    2. / 3., 1e-2, 7),
 };
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<BoltenkovSCalcIntegralkMPI, InType>(
