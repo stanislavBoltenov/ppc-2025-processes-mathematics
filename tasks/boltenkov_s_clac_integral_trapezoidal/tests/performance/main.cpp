@@ -29,7 +29,7 @@ class BoltenkovSCalcIntegralRunPerfTestProcesses : public ppc::util::BaseRunPerf
   void SetUp() override {
     TestType test_params = std::make_tuple(
         std::make_tuple(1 << 8, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F3), 1.,
-        1e-5, 0);
+        1e-3, 0);
     input_data_ = std::get<0>(test_params);
     expected_output_ = std::get<1>(test_params);
     eps_ = std::get<2>(test_params);

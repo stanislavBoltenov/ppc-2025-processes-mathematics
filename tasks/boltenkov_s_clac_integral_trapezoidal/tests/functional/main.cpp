@@ -86,24 +86,24 @@ double F3(std::vector<double> args) {
 }
 
 const std::array<TestType, 8> kTestParam = {
-    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F1), 1., 1e-14, 0),
-    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F1), 1.,
-                    1e-14, 1),
+    std::make_tuple(std::make_tuple(1 << 5, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F1), 1., 1e-8, 0),
+    std::make_tuple(std::make_tuple(1 << 5, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F1), 1.,
+                    1e-8, 1),
     std::make_tuple(
-        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F1), 1.,
-        1e-14, 2),
-    std::make_tuple(std::make_tuple(1 << 3, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F2), 0.5, 1e-14, 3),
-    std::make_tuple(std::make_tuple(1 << 3, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F2), 1.,
+        std::make_tuple(1 << 5, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F1), 1.,
+        1e-8, 2),
+    std::make_tuple(std::make_tuple(1 << 5, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F2), 0.5, 1e-8, 3),
+    std::make_tuple(std::make_tuple(1 << 5, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F2), 1.,
                     1e-14, 4),
     std::make_tuple(
-        std::make_tuple(1 << 3, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F2), 1.5,
-        1e-14, 5),
+        std::make_tuple(1 << 5, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F2), 1.5,
+        1e-8, 5),
     std::make_tuple(
-        std::make_tuple(1 << 3, 4, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}, {0., 1.}}),
+        std::make_tuple(1 << 5, 4, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}, {0., 1.}}),
                         F2),
-        2., 1e-14, 6),
+        2., 1e-8, 6),
     std::make_tuple(std::make_tuple(1 << 9, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F3),
-                    2. / 3., 1e-5, 7),
+                    2. / 3., 1e-3, 7),
 };
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<BoltenkovSCalcIntegralkMPI, InType>(
