@@ -23,7 +23,7 @@ class BoltenkovSCalcIntegralkSEQ : public BaseTask {
   static void CalcPoints(const int &n, const int &ind_cur_args, const std::vector<double> &h,
                          std::unique_ptr<std::queue<std::vector<double>>> &args);
   double CalcIntegral(const int &n, const int &cnt_limits, const std::vector<std::pair<double, double>> &limits,
-                      double (*func)(std::vector<double>));
+                      double (*func)(std::vector<double>)) const;
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;

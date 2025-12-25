@@ -19,11 +19,11 @@ class BoltenkovSCalcIntegralkMPI : public BaseTask {
 
  private:
   int sign_integral_;
-  double CalcCoef(const std::vector<double> &args, const std::vector<std::pair<double, double>> &limits);
-  void CalcPoints(const int &n, const int &ind_cur_args, const std::vector<double> &h,
-                  std::unique_ptr<std::queue<std::vector<double>>> &args);
-  double CalcIntegral(const int &n, const int &cnt_limits, const std::vector<std::pair<double, double>> &limits,
-                      double (*func)(std::vector<double>));
+  static double CalcCoef(const std::vector<double> &args, const std::vector<std::pair<double, double>> &limits);
+  static void CalcPoints(const int &n, const int &ind_cur_args, const std::vector<double> &h,
+                         std::unique_ptr<std::queue<std::vector<double>>> &args);
+  double CalcIntegral(const int &cnt_limits, const std::vector<std::pair<double, double>> &limits,
+                      const std::vector<double> &h, double (*func)(std::vector<double>));
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;

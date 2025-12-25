@@ -79,13 +79,11 @@ void BoltenkovSCalcIntegralkMPI::CalcPoints(const int &n, const int &ind_cur_arg
   std::swap(args, args_tmp);
 }
 
-double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &n, const int &cnt_limits,
+double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &cnt_limits,
                                                 const std::vector<std::pair<double, double>> &limits,
-                                                double (*func)(std::vector<double>)) {
+                                                const std::vector<double> &h, double (*func)(std::vector<double>)) {
   double per = 1.0;
-  std::vector<double> h(cnt_limits);
   for (std::size_t i = 0; i < h.size(); i++) {
-    h[i] = (limits[i].second - limits[i].first) / static_cast<double>(n);
     per *= h[i];
   }
 
@@ -101,7 +99,7 @@ double BoltenkovSCalcIntegralkMPI::CalcIntegral(const int &n, const int &cnt_lim
   int ind_cur_args = 0;
 
   while (ind_cur_args != cnt_limits) {
-    CalcPoints(n, ind_cur_args, h, args);
+    CalcPoints((limits[ind_cur_args].second - limits[ind_cur_args].first) / h[ind_cur_args], ind_cur_args, h, args);
     ind_cur_args++;
   }
 
@@ -167,10 +165,22 @@ bool BoltenkovSCalcIntegralkMPI::RunImpl() {
   std::vector<std::pair<double, double>> local_limits = limits;
   local_limits[0] = {local_a, local_b};
 
-  double local_integral = CalcIntegral(n, cnt_limits, local_limits, std::get<3>(GetInput()));
+  std::vector<double> h(cnt_limits);
+  h[0] = (local_b - local_a) * (static_cast<double>(size) / (static_cast<double>(n)));
+  for (std::size_t i = 1; i < h.size(); i++) {
+    h[i] = (limits[i].second - limits[i].first) / static_cast<double>(n);
+  }
 
-  double &global_integral = GetOutput();
+  double local_integral = CalcIntegral(cnt_limits, local_limits, h, std::get<3>(GetInput()));
+
+  double global_integral = 0.0;
   MPI_Reduce(&local_integral, &global_integral, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+  if (rank == 0) {
+    GetOutput() = global_integral;
+  }
+
+  MPI_Bcast(&GetOutput(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   return true;
 }

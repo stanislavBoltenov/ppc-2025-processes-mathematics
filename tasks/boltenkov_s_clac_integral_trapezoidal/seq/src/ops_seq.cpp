@@ -1,6 +1,7 @@
 #include "boltenkov_s_clac_integral_trapezoidal/seq/include/ops_seq.hpp"
 
 #include <cmath>
+#include <cstddef>
 #include <memory>
 #include <queue>
 #include <utility>
@@ -10,10 +11,9 @@
 
 namespace boltenkov_s_clac_integral_trapezoidal {
 
-BoltenkovSCalcIntegralkSEQ::BoltenkovSCalcIntegralkSEQ(const InType &in) {
+BoltenkovSCalcIntegralkSEQ::BoltenkovSCalcIntegralkSEQ(const InType &in) : sign_integral_(1) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  sign_integral_ = 1;
   GetOutput() = 0.0;
 }
 
@@ -61,7 +61,7 @@ void BoltenkovSCalcIntegralkSEQ::CalcPoints(const int &n, const int &ind_cur_arg
 
 double BoltenkovSCalcIntegralkSEQ::CalcIntegral(const int &n, const int &cnt_limits,
                                                 const std::vector<std::pair<double, double>> &limits,
-                                                double (*func)(std::vector<double>)) {
+                                                double (*func)(std::vector<double>)) const {
   double per = 1.0;
   std::vector<double> h(cnt_limits);
   for (std::size_t i = 0; i < h.size(); i++) {
