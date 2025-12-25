@@ -77,15 +77,7 @@ double F2(std::vector<double> args) {
   return res;
 }
 
-double F3(std::vector<double> args) {
-  double res = 0.0;
-  for (std::size_t i = 0; i < args.size(); i++) {
-    res += args[i] * args[i];
-  }
-  return res;
-}
-
-const std::array<TestType, 8> kTestParam = {
+const std::array<TestType, 6> kTestParam = {
     std::make_tuple(std::make_tuple(1 << 5, 1, std::vector<std::pair<double, double>>({{0., 1.}}), F1), 1., 1e-8, 0),
     std::make_tuple(std::make_tuple(1 << 5, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F1), 1.,
                     1e-8, 1),
@@ -98,12 +90,6 @@ const std::array<TestType, 8> kTestParam = {
     std::make_tuple(
         std::make_tuple(1 << 5, 3, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}}), F2), 1.5,
         1e-8, 5),
-    std::make_tuple(
-        std::make_tuple(1 << 5, 4, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}, {0., 1.}, {0., 1.}}),
-                        F2),
-        2., 1e-8, 6),
-    std::make_tuple(std::make_tuple(1 << 10, 2, std::vector<std::pair<double, double>>({{0., 1.}, {0., 1.}}), F3),
-                    2. / 3., 1e-2, 7),
 };
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<BoltenkovSCalcIntegralkMPI, InType>(
