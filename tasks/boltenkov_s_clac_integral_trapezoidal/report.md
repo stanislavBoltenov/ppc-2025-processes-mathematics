@@ -1,0 +1,248 @@
+# Отчёт по задаче: Вычисление многомерных интегралов с использованием многошаговой схемы (метод трапеций).
+
+**Национальный исследовательский Нижегородский государственный университет им. Н.И. Лобачевского**  
+Институт информационных технологий, математики и механики
+
+| | |
+|------|------|
+| **Направление подготовки** | Прикладная математика и информатика |
+| **Вариант задания** | №8 |
+| **Студент** | Болтенков С.С. (группа 3823Б1ПМоп3) |
+| **Преподаватель** | доцент Сысоев А.В. |
+| **Год выполнения** | 2025 |
+
+## Введение
+Разработан алгоритм вычисление многомерных интегралов с использованием многошаговой схемы (метод трапеций) с реализацией в последовательной и параллельной версиях (MPI). Проведён сравнительный анализ производительности. Параллельная реализация направлена на сокращение времени вычислений за счёт распределения данных по процессам.
+
+## Постановка задачи
+Задача состоит в вычислении многомерного определённого интеграла от заданной функции `f(x_1, x_2, ..., x_m)` по гиперпрямоугольной области 
+`[a_1, b_1] × [a_2, b_2] × ... × [a_m, b_m]` с использованием составной формулы трапеций. Требуется разработать и реализовать последовательный и параллельный (на основе MPI) алгоритмы, провести анализ их корректности и эффективности.
+
+## Описание алгоритма
+Алгоритм основан на составной формуле трапеций для многомерного случая. Область интегрирования разбивается на равномерную сетку с заданным числом узлов `n` по каждому измерению. Значение интеграла приближается суммой значений функции в узлах сетки, умноженных на соответствующие весовые коэффициенты. Коэффициенты рассчитываются с учётом положения узла относительно границ области: внутренние узлы имеют коэффициент 2, граничные — 1. Для эффективного перебора всех узлов используется итеративный метод построения точек сетки. Ниже приведена блок схема итеративного алгоритма получения всех узлов сетки.
+
+```mermaid
+flowchart TD
+    Start(["Начало CalcIntegral"]) --> Init["int ind_cur_args = 0"]
+    Init --> Loop{"while (ind_cur_args != cnt_limits)"}
+    
+    Loop -- Да --> Call[Вызов CalcPoints<br>для текущего измерения ind_cur_args]
+    Call --> Inc["ind_cur_args++"]
+    Inc --> Loop
+    
+    Loop -- Нет --> Finish["Найдены все узлы сетки"]
+    Finish --> End(["Конец цикла"])
+```
+```mermaid
+flowchart TD
+    Start(["Начало CalcPoints"]) --> A["Получение текущего набора<br>аргументов из очереди"]
+    A --> B{"Очередь пуста?"}
+    
+    B -- Нет --> C["Извлечь cur_args из очереди"]
+    C --> D["Сохранить cur_args<br>во временную очередь"]
+    D --> E["Инициализация step = 0"]
+    E --> F{"step < n?"}
+    
+    F -- Да --> G["cur_args по индексу ind_cur_args<br>увеличить на h[ind_cur_args]"]
+    G --> H["Добавить cur_args<br>во временную очередь"]
+    H --> I["step увеличить на 1"]
+    I --> F
+    
+    F -- Нет --> J["Повторить для следующего<br>элемента основной очереди"]
+    J --> B
+    
+    B -- Да --> K["Заменить основную очередь<br>временной очередью"]
+    K --> End(["Конец CalcPoints"])
+```
+
+После того, как были найдены все узлы сетки вычисляется значение интеграла.
+
+## Описание схемы параллельного алгоритма
+Параллельная реализация основана на разделении области интегрирования по первому измерению между доступными процессами MPI. Каждый процесс вычисляет интеграл по своей локальной подобласти, используя тот последовательный алгоритм, описанный в предыдущей главе. Затем результаты суммируются с помощью операции `MPI_Reduce`. Для обеспечения одинаковых данных на всех процессах используются широковещательные рассылки `MPI_Bcast` параметров задачи: числа узлов, границ интегрирования и знака интеграла.
+
+## Описание MPI-версии
+MPI-версия алгоритма включает следующие этапы:
+1. Пересылка входных данных с нулевого процесса на все остальные с помощью `MPI_Bcast`.
+2. Разделение области интегрирования по первому измерению на подынтервалы, количество которых равно числу процессов.
+3. Вычисление локального интеграла каждым процессом.
+4. Вычисление результата на нулевом процессе с помощью `MPI_Reduce`.
+5. Пересылка результата всем процессам с помощью `MPI_Bcast`.
+
+Программная реализация использует в качестве типа входных данных специализированный кортеж:  
+`sstd::tuple<int, int, std::vector<std::pair<double, double>>, double (*)(std::vector<double>)>`, 
+где:  
+- первый элемент — число узлов `n` по каждому измерению,  
+- второй элемент — количество переменных, от которых зависит функция,
+- третий элемент — границы гиперпрямоугольной области
+- четвёртый элемент — указатель на подынтегральную функцию
+
+Данная структура данных была выбрана как наиболее удобная для организации эффективного распределения данных между процессами и последующего сбора результатов вычислений.
+
+## Результаты экспериментов и подтверждение корректности
+Эксперименты проводились для тестовой функции f(x, y) = x<sup>2</sup> + y<sup>2</sup> и n = 2<sup>10</sup>. Получены следующие результаты.
+
+| Версия алгоритма | Время выполнения(с.) 1 проц | Время выполнения(с.) 2 проц | Время выполнения(с.) 4 проц | Время выполнения(с.) 8 проц |
+|------------------:|---------------------:|---------------------:|---------------------:|---------------------:|
+| последовательная | 0.187233 | 0.187233 | 0.187233 | 0.187233 |
+| параллельная (MPI) | 0.171324 | 0.0915309 | 0.0688013 | 0.0441993 |
+
+**Подтверждение корректности:**  
+1. Функция тестирования проверяет абсолютную погрешность: модуль разности аналитического и точного решения не превышает малого параметра `eps`.  
+2. Все функциональные тесты и тесты производительности были успешно пройдены на локальной машине.
+3. Для константных и линейных функции была подтверждена их абсолютно точная аппроксимация реализации метода.
+4. Для функции f(x, y) = x<sup>2</sup> + y<sup>2</sup> был подтверждён второй порядкок реализации метода, т.е при удвоении шага абсолютная погрешность уменьшалась в 4 раза.
+
+## Выводы из результатов
+Параллельная реализация позволяет достичь ускорения при увеличении числа процессов. Самое большое ускорение в 4 раза наблюдается при 8-ми процессах.Алгоритм демонстрирует хорошую масштабируемость и точность.
+
+## Заключение
+В ходе работы разработаны последовательная и параллельная (MPI) реализации алгоритма вычисления многомерных интегралов методом трапеций. Параллельная версия показала значительное ускорение по сравнению с последовательной при сохранении точности вычислений. Алгоритм может быть использован для решения задач численного интегрирования в высокопроизводительных вычислениях.
+
+
+## Список литературы
+1. Документация в формате веб-сайта по реализации **MPICH** стандарта **MPI**: [https://www.mpich.org](https://www.mpich.org)
+
+
+## Параллельная реализация
+```cpp
+double BoltenkovSCalcIntegralkMPI::CalcCoef(const std::vector<double> &args,
+                                            const std::vector<std::pair<double, double>> &limits) {
+  double coef = 1.0;
+  for (std::size_t i = 0; i < args.size(); i++) {
+    if (std::abs(args[i] - limits[i].first) > 1e-14 && std::abs(args[i] - limits[i].second) > 1e-14) {
+      coef *= 2;
+    }
+  }
+  return coef;
+}
+
+void BoltenkovSCalcIntegralkMPI::CalcPoints(const int &n, const int &ind_cur_args, const std::vector<double> &h,
+                                            std::unique_ptr<std::queue<std::vector<double>>> &args) {
+  std::vector<double> cur_args;
+  std::unique_ptr<std::queue<std::vector<double>>> args_tmp = std::make_unique<std::queue<std::vector<double>>>();
+  while (!args->empty()) {
+    cur_args = args->front();
+    args->pop();
+    args_tmp->push(cur_args);
+    for (int step = 0; step < n; step++) {
+      cur_args[ind_cur_args] += h[ind_cur_args];
+      args_tmp->push(cur_args);
+    }
+    cur_args[ind_cur_args] += h[ind_cur_args];
+  }
+  std::swap(args, args_tmp);
+}
+
+double BoltenkovSCalcIntegralkMPI::CalcIntegral(const std::vector<int> &n, const int &cnt_limits,
+                                                const std::vector<std::pair<double, double>> &limits,
+                                                const std::vector<double> &h,
+                                                double (*func)(std::vector<double>)) const {
+  double per = 1.0;
+  for (double hi : h) {
+    per *= hi;
+  }
+
+  std::vector<double> args_init(cnt_limits);
+  for (std::size_t i = 0; i < args_init.size(); i++) {
+    args_init[i] = limits[i].first;
+  }
+
+  std::unique_ptr<std::queue<std::vector<double>>> args = std::make_unique<std::queue<std::vector<double>>>();
+  args->push(args_init);
+
+  double res = 0.0;
+  int ind_cur_args = 0;
+
+  while (ind_cur_args != cnt_limits) {
+    CalcPoints(n[ind_cur_args], ind_cur_args, h, args);
+    ind_cur_args++;
+  }
+
+  while (!args->empty()) {
+    args_init = args->front();
+    args->pop();
+    double coef = CalcCoef(args_init, limits);
+    res += func(args_init) * coef * per / std::pow(2., static_cast<double>(cnt_limits));
+  }
+
+  res *= sign_integral_;
+  return res;
+}
+
+bool BoltenkovSCalcIntegralkMPI::RunImpl() {
+  int rank = 0;
+  int size = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  MPI_Bcast(&sign_integral_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  int n = 0;
+  int cnt_limits = 0;
+  std::vector<std::pair<double, double>> limits;
+
+  if (rank == 0) {
+    n = std::get<0>(GetInput());
+    n += size - (n % size);
+    cnt_limits = std::get<1>(GetInput());
+    limits = std::get<2>(GetInput());
+  }
+
+  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&cnt_limits, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if (rank != 0) {
+    limits.resize(cnt_limits);
+  }
+
+  for (int i = 0; i < cnt_limits; i++) {
+    double first = 0.0;
+    double second = 0.0;
+    if (rank == 0) {
+      first = limits[i].first;
+      second = limits[i].second;
+    }
+    MPI_Bcast(&first, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&second, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    if (rank != 0) {
+      limits[i] = {first, second};
+    }
+  }
+
+  double local_a = 0.0;
+  double local_b = 0.0;
+  double global_a = limits[0].first;
+  double global_b = limits[0].second;
+  double interval_length = (global_b - global_a) / size;
+
+  local_a = global_a + (rank * interval_length);
+  local_b = global_a + ((rank + 1) * interval_length);
+
+  std::vector<std::pair<double, double>> local_limits = limits;
+  local_limits[0] = {local_a, local_b};
+
+  std::vector<double> h(cnt_limits);
+  if (!h.empty()) {
+    h[0] = (local_b - local_a) * (static_cast<double>(size) / (static_cast<double>(n)));
+  }
+  for (std::size_t i = 1; i < h.size(); i++) {
+    h[i] = (limits[i].second - limits[i].first) / static_cast<double>(n);
+  }
+  std::vector<int> n_vec(cnt_limits, n);
+  if (!h.empty()) {
+    n_vec[0] = n / size;
+  }
+  double local_integral = CalcIntegral(n_vec, cnt_limits, local_limits, h, std::get<3>(GetInput()));
+
+  double global_integral = 0.0;
+  MPI_Reduce(&local_integral, &global_integral, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+  if (rank == 0) {
+    GetOutput() = global_integral;
+  }
+
+  MPI_Bcast(&GetOutput(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+  return true;
+}
+```
